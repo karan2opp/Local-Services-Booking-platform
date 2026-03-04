@@ -7,6 +7,7 @@ import { ApiResponse } from "../utils/apiResponse.js"
 // GET all pending providers
 export const getPendingProviders = asyncHandler(async(req, res) => {
 
+
   const pendingProviders = await serviceProvider.find({ status: "pending" })
     .populate("userId", "username email phone")
 
@@ -145,3 +146,4 @@ export const rejectAllPendingProviders = asyncHandler(async(req, res) => {
     new ApiResponse(200, {}, `${pendingProviders.length} providers rejected successfully`)
   )
 })
+

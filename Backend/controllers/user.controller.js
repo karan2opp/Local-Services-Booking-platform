@@ -6,6 +6,8 @@ import { ApiError } from "../utils/ApiError.js";
 
 
     const {username,email,password,phone}=req.body;
+    
+    
     if([username,email,password].some((field)=>field?.trim()==="")){
         throw new ApiError(400,"All fields are required")
     }
@@ -57,7 +59,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 const loginUser = asyncHandler(async(req, res) => {
 
   const { email, password } = req.body
-
+console.log(req.body);
   if(!email || !password){
     throw new ApiError(400, "All fields are required")
   }
@@ -73,7 +75,7 @@ const loginUser = asyncHandler(async(req, res) => {
   
 
   const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
-  console.log(loggedInUser);
+
   
 
   const options = {

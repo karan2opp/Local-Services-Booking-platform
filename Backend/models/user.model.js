@@ -33,6 +33,25 @@ const userSchema=new mongoose.Schema({
   trim: true,
   match: [/^[0-9]{10}$/, "Please enter a valid phone number"]
 },
+    addresses: [
+    {
+       label: String,   // "Home", "Office", "Other"
+       street: String,
+       city: String,
+       area: String,
+       state: String,
+       pincode: String,
+       isDefault: Boolean , // which address to use by default
+    }
+                ],
+    savedServices:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Service"
+  }],
+cart:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Cart"
+},
    
 
 role:{
@@ -61,7 +80,7 @@ userSchema.methods.generateAccessToken= function(){
    return  jwt.sign({
   _id: this._id,
    email:this.email,
-        username:this.username
+username:this.username
 }, process.env.ACCESS_TOKEN_SECRET, { // ← comma here
   expiresIn: process.env.ACCESS_TOKEN_EXPIRY
 })

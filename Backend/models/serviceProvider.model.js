@@ -11,7 +11,7 @@ const serviceProviderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Service"
   }],
-  address:{
+  provideraddress:{
     street: String,
     city: String,
     area: String,
@@ -19,7 +19,7 @@ const serviceProviderSchema = new mongoose.Schema({
     pincode: String,
   },
   businessPhone:{
-    type: Number,
+    type: String,
     unique: true,
     required:true,
     trim: true,

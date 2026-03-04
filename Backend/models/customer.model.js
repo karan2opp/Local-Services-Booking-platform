@@ -8,25 +8,7 @@ const customerSchema=new mongoose.Schema({
     required: true,
     unique: true  
   },
-    addresses: [
-    {
-       label: String,   // "Home", "Office", "Other"
-       street: String,
-       city: String,
-       area: String,
-       state: String,
-       pincode: String,
-       isDefault: Boolean , // which address to use by default
-    }
-                ],
-    savedServices:[{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Service"
-  }],
-cart:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"Cart"
-}
+
 
 },{
     timestamps:true
