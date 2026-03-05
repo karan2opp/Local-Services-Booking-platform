@@ -43,7 +43,7 @@ const serviceProviderSchema = new mongoose.Schema({
 },
   isAvailable:{
     type: Boolean,
-    default: false
+    default: true
   },
   coverImage:{
     type: String,
