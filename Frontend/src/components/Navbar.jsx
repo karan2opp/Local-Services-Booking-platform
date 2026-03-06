@@ -1,65 +1,69 @@
-
-import { useState, useEffect, useRef } from "react";
-import { Menu, X, Briefcase, User } from "lucide-react";
-import AuthModal from "./AuthModal";
-import useAuthStore from "../store/useAuthStore";
-import axios from "axios";
+import { useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
+import { Menu, X, Briefcase, User } from "lucide-react"
+import AuthModal from "./AuthModal"
+import useAuthStore from "../store/useAuthStore"
+import axios from "axios"
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [authType, setAuthType] = useState(null);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [authType, setAuthType] = useState(null)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [search, setSearch] = useState("")
+  const [category, setCategory] = useState("")
+  const [city, setCity] = useState("")
+  const [area, setArea] = useState("")
 
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef(null)
+  const navigate = useNavigate()
 
-  const { user, isLoggedIn, logout } = useAuthStore();
+  const { user, isLoggedIn, logout } = useAuthStore()
+
+  const handleSearch = () => {
+    if(!search && !category && !city && !area) return
+
+    const params = new URLSearchParams()
+    if(search) params.set("q", search)
+    if(category) params.set("category", category)
+    if(city) params.set("city", city)
+    if(area) params.set("area", area)
+
+    navigate(`/search?${params.toString()}`)
+    setMenuOpen(false)
+  }
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/user/logout", {}, { withCredentials: true });
-      logout();
-      setProfileOpen(false);
-    } catch (error) {
-      console.log(error.response?.data?.message || "Logout failed");
+      await axios.post("/api/user/logout", {}, { withCredentials: true })
+      logout()
+      setProfileOpen(false)
+    } catch(error) {
+      console.log(error.response?.data?.message || "Logout failed")
     }
-  };
+  }
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setProfileOpen(false);
+      if(dropdownRef.current && !dropdownRef.current.contains(e.target)){
+        setProfileOpen(false)
       }
-    };
+    }
+    document.addEventListener("click", handleClick)
+    return () => document.removeEventListener("click", handleClick)
+  }, [])
 
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, []);
-
-  // Detect scroll
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const handleScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
-    <header
-      className={`w-full sticky top-0 z-40 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/80 backdrop-blur-md   shadow-sm"
-          : "bg-transparent"
-      }`}
-    >
-      {/* NAVBAR */}
+    <header className={`w-full sticky top-0 z-40 transition-all duration-300 ${
+      scrolled ? "bg-white/80 backdrop-blur-md shadow-sm" : "bg-transparent"
+    }`}>
+
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-14 gap-3">
 
@@ -68,46 +72,62 @@ export default function Navbar() {
             <div className="bg-blue-600 text-white p-1.5 rounded-md">
               <Briefcase size={16} />
             </div>
-            <span className="text-lg font-bold text-blue-600">
-              LocalPro
-            </span>
+            <span className="text-lg font-bold text-blue-600">LocalPro</span>
           </div>
 
-          {/* Search + Filters */}
+          {/* Desktop Search + Filters */}
           <div className="hidden md:flex items-center gap-2">
 
             <div className="flex items-center border border-gray-300 rounded-full px-3 py-1.5 gap-2 w-32 lg:w-40 xl:w-52 bg-white/90">
-              <svg
-                className="text-gray-400 shrink-0"
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+              <svg className="text-gray-400 shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
-
               <input
                 type="text"
                 placeholder="Search services..."
                 className="text-sm text-gray-600 placeholder-gray-400 outline-none w-full bg-transparent"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if(e.key === "Enter") handleSearch()
+                }}
               />
             </div>
 
-            <select className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white">
-              <option>Category</option>
+            <select
+              className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="">Category</option>
+              <option value="Saloon">Saloon</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Cleaning">Cleaning</option>
+              <option value="AC-Service">AC Service</option>
             </select>
 
-            <select className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white">
-              <option>City</option>
+            <select
+              className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+            >
+              <option value="">City</option>
+              <option value="Bangalore">Bangalore</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Delhi">Delhi</option>
             </select>
 
-            <select className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white">
-              <option>Area</option>
-            </select>
+            <input
+              type="text"
+              placeholder="Area"
+              className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white w-24"
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              onKeyDown={(e) => {
+                if(e.key === "Enter") handleSearch()
+              }}
+            />
 
           </div>
 
@@ -118,18 +138,19 @@ export default function Navbar() {
               Become a Pro
             </button>
 
-            {/* Profile Dropdown */}
-            <div ref={dropdownRef} className="relative">
-
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="p-2 rounded-full hover:bg-gray-100 transition"
-              >
+            {/* Profile Dropdown (Hover) */}
+            <div
+              ref={dropdownRef}
+              className="relative"
+              onMouseEnter={() => setProfileOpen(true)}
+              onMouseLeave={() => setProfileOpen(false)}
+            >
+              <button className="p-2 rounded-full hover:bg-gray-100 transition">
                 <User size={20} className="text-gray-600" />
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-2">
+                <div className="absolute top-6 right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-2">
 
                   {isLoggedIn ? (
                     <>
@@ -147,20 +168,14 @@ export default function Navbar() {
                   ) : (
                     <>
                       <button
-                        onClick={() => {
-                          setAuthType("login");
-                          setProfileOpen(false);
-                        }}
+                        onClick={() => { setAuthType("login"); setProfileOpen(false) }}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
                       >
                         Login
                       </button>
 
                       <button
-                        onClick={() => {
-                          setAuthType("signup");
-                          setProfileOpen(false);
-                        }}
+                        onClick={() => { setAuthType("signup"); setProfileOpen(false) }}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
                       >
                         Signup
@@ -170,10 +185,9 @@ export default function Navbar() {
 
                 </div>
               )}
-
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu */}
             <button
               className="md:hidden text-gray-600"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -186,42 +200,67 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* MOBILE MENU */}
+      {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white px-6 py-4 space-y-3">
 
           <div className="flex items-center border border-gray-300 rounded-full px-3 py-2 gap-2">
-            <svg
-              className="text-gray-400 shrink-0"
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+            <svg className="text-gray-400 shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
-
             <input
               type="text"
               placeholder="Search services..."
               className="text-sm text-gray-600 outline-none w-full bg-transparent"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if(e.key === "Enter") handleSearch()
+              }}
             />
           </div>
 
-          <select className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600">
-            <option>Category</option>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Category</option>
+            <option value="Saloon">Saloon</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="Cleaning">Cleaning</option>
+            <option value="AC-Service">AC Service</option>
           </select>
 
-          <select className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600">
-            <option>City</option>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+          >
+            <option value="">City</option>
+            <option value="Bangalore">Bangalore</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Delhi">Delhi</option>
           </select>
 
-          <select className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600">
-            <option>Area</option>
-          </select>
+          <input
+            type="text"
+            placeholder="Area"
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
+            onKeyDown={(e) => {
+              if(e.key === "Enter") handleSearch()
+            }}
+          />
+
+          <button
+            onClick={handleSearch}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm"
+          >
+            Search
+          </button>
 
           <hr />
 
@@ -232,14 +271,13 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* AUTH MODAL */}
       {authType && (
         <AuthModal
           type={authType}
           closeModal={() => setAuthType(null)}
         />
       )}
-    </header>
-  );
-}
 
+    </header>
+  )
+}

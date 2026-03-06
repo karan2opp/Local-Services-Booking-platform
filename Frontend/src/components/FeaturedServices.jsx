@@ -27,9 +27,7 @@ export default function FeaturedServices() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Featured Services</h2>
-        <button className="text-sm text-blue-600">
-          Sort by: Recommended ▼
-        </button>
+       
       </div>
 
       {/* Grid */}

@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import './index.css'
 import ServicePage from './pages/servicePage/ServicePage.jsx'
+import SearchResultsPage from './pages/searchResult/SearchResultPage.jsx'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -14,8 +15,10 @@ const router = createBrowserRouter([
   {
     path:"/service/:serviceId",
     element:<ServicePage />
+  },{
+    path:"/search",
+    element:<SearchResultsPage />
   }
-  
 ])
 
 
