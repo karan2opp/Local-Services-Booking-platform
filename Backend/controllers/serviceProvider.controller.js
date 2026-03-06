@@ -35,7 +35,6 @@ export const createService = asyncHandler(async(req, res) => {
 
   const { serviceName, description, price, categoryId, serviceType } = req.body
 
-  // validate fields
   if(!serviceName || !description || !price || !categoryId || !serviceType){
     throw new ApiError(400, "All fields are required")
   }
@@ -58,37 +57,31 @@ export const createService = asyncHandler(async(req, res) => {
     throw new ApiError(409, "You already have a service with this name")
   }
 
-  // handle images
-  const imageFiles = req.files
-  if(!imageFiles || imageFiles.length === 0){
-    throw new ApiError(400, "At least one image is required")
+  // handle single cover image
+  if(!req.file){
+    throw new ApiError(400, "Cover image is required")
   }
 
-  const uploadPromises = imageFiles.map(file => uploadOnCloudinary(file.path))
-  const results = await Promise.allSettled(uploadPromises)
-
-  const imageUrls = results
-    .filter(result => result.status === "fulfilled" && result.value)
-    .map(result => result.value.url)
-
-  const failedUploads = results.filter(result => result.status === "rejected")
-  if(failedUploads.length > 0){
-    console.log(`${failedUploads.length} images failed to upload`)
-  }
-
-  if(imageUrls.length === 0){
-    throw new ApiError(500, "All image uploads failed")
+  const uploadedImage = await uploadOnCloudinary(req.file.path)
+  if(!uploadedImage){
+    throw new ApiError(500, "Image upload failed")
   }
 
   const service = await Service.create({
-    providerId: req.provider._id,  // ✅ from isApprovedProvider middleware
-    categoryId,                     // ✅ updated
+    providerId: req.provider._id,
+    categoryId,
     serviceName,
     description,
-    price: Number(price),           // ✅ updated from basePrice
+    price: Number(price),
     serviceType,
-    image: imageUrls
+    image: uploadedImage.url  // ✅ single string
   })
+
+  // push service id into provider's services array
+  await serviceProvider.findByIdAndUpdate(
+    req.provider._id,
+    { $push: { services: service._id } }
+  )
 
   return res.status(201).json(
     new ApiResponse(201, service, "Service created successfully")
@@ -98,7 +91,7 @@ export const createService = asyncHandler(async(req, res) => {
 export const updateService = asyncHandler(async(req, res) => {
 
   const { serviceId } = req.params
-  const { serviceName, description, price, categoryId, existingImages, serviceType } = req.body  // ✅ updated
+  const { serviceName, description, price, categoryId, serviceType } = req.body
 
   // check service exists
   const service = await Service.findById(serviceId)
@@ -133,23 +126,11 @@ export const updateService = asyncHandler(async(req, res) => {
     }
   }
 
-  // handle images
-  let imageUrls = []
-  if(existingImages){
-    imageUrls = Array.isArray(existingImages) ? existingImages : [existingImages]
-  }
-
-  if(req.files && req.files.length > 0){
-    const uploadPromises = req.files.map(file => uploadOnCloudinary(file.path))
-    const results = await Promise.allSettled(uploadPromises)
-    const newImageUrls = results
-      .filter(result => result.status === "fulfilled" && result.value)
-      .map(result => result.value.url)
-    imageUrls = [...imageUrls, ...newImageUrls]
-  }
-
-  if(imageUrls.length === 0){
-    imageUrls = service.image
+  // handle cover image update
+  let imageUrl = service.image  // keep existing by default
+  if(req.file){
+    const uploaded = await uploadOnCloudinary(req.file.path)
+    imageUrl = uploaded?.url || service.image
   }
 
   const updatedService = await Service.findByIdAndUpdate(
@@ -157,16 +138,93 @@ export const updateService = asyncHandler(async(req, res) => {
     {
       serviceName: serviceName || service.serviceName,
       description: description || service.description,
-      price: price ? Number(price) : service.price,        // ✅ updated
-      categoryId: categoryId || service.categoryId,        // ✅ updated
-      image: imageUrls,
-      serviceType: serviceType || service.serviceType
+      price: price ? Number(price) : service.price,
+      categoryId: categoryId || service.categoryId,
+      serviceType: serviceType || service.serviceType,
+      image: imageUrl  // ✅ single string
     },
     { new: true }
   )
 
   return res.status(200).json(
     new ApiResponse(200, updatedService, "Service updated successfully")
+  )
+})
+
+
+
+export const updateServicePortfolio = asyncHandler(async(req, res) => {
+
+  const { serviceId } = req.params
+
+  const service = await Service.findById(serviceId)
+  if(!service){
+    throw new ApiError(404, "Service not found")
+  }
+
+  if(service.providerId.toString() !== req.provider._id.toString()){
+    throw new ApiError(403, "You can only update your own services")
+  }
+
+  if(!req.files){
+    throw new ApiError(400, "Images are required")
+  }
+
+  const beforeFiles = req.files.filter(f => f.fieldname.startsWith("before"))
+  const afterFiles = req.files.filter(f => f.fieldname.startsWith("after"))
+
+  if(beforeFiles.length === 0 || afterFiles.length === 0){
+    throw new ApiError(400, "Both before and after images are required")
+  }
+
+  if(beforeFiles.length !== afterFiles.length){
+    throw new ApiError(400, "Each before image must have a matching after image")
+  }
+
+  // ✅ check max 3 pairs
+  const existingPairs = service.beforeAfterImages.length
+  const newPairs = beforeFiles.length
+
+  if(existingPairs >= 3){
+    throw new ApiError(400, "You already have 3 pairs. Cannot add more!")
+  }
+
+  if(existingPairs + newPairs > 3){
+    throw new ApiError(400, 
+      `You have ${existingPairs} pair(s) already. You can only add ${3 - existingPairs} more`
+    )
+  }
+
+  const uploadPromises = [
+    ...beforeFiles.map(f => uploadOnCloudinary(f.path)),
+    ...afterFiles.map(f => uploadOnCloudinary(f.path))
+  ]
+  const results = await Promise.allSettled(uploadPromises)
+
+  const beforeUrls = results
+    .slice(0, beforeFiles.length)
+    .filter(r => r.status === "fulfilled" && r.value)
+    .map(r => r.value.url)
+
+  const afterUrls = results
+    .slice(beforeFiles.length)
+    .filter(r => r.status === "fulfilled" && r.value)
+    .map(r => r.value.url)
+
+  const pairs = beforeUrls.map((beforeUrl, index) => ({
+    before: beforeUrl,
+    after: afterUrls[index],
+    caption: req.body[`caption_${index}`] || ""
+  }))
+
+  const updatedService = await Service.findByIdAndUpdate(
+    serviceId,
+    { $push: { beforeAfterImages: { $each: pairs } } },
+    { new: true }
+  )
+
+  return res.status(200).json(
+    new ApiResponse(200, updatedService, "Portfolio updated successfully")
   )
 })
 
@@ -179,12 +237,10 @@ export const deleteService = asyncHandler(async(req, res) => {
     throw new ApiError(404, "Service not found")
   }
 
-  // check service belongs to this provider
   if(service.providerId.toString() !== req.provider._id.toString()){
     throw new ApiError(403, "You can only delete your own services")
   }
 
-  // check no active bookings
   const activeBookings = await Booking.findOne({
     serviceId,
     status: { $in: ["pending", "confirmed", "inProgress"] }
@@ -195,8 +251,13 @@ export const deleteService = asyncHandler(async(req, res) => {
 
   await Service.findByIdAndDelete(serviceId)
 
+  // ✅ remove from provider's services array
+  await serviceProvider.findByIdAndUpdate(
+    req.provider._id,
+    { $pull: { services: serviceId } }
+  )
+
   return res.status(200).json(
     new ApiResponse(200, {}, "Service deleted successfully")
   )
 })
-

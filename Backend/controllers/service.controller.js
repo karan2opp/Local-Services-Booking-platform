@@ -7,12 +7,17 @@ import { ApiResponse } from "../utils/apiResponse.js"
 
 export const searchServices = asyncHandler(async(req, res) => {
 
-  const { category, city, area } = req.query
+  const { category, city, area, page, limit } = req.query
 
-  // build service query
+  
+  const pageNumber = parseInt(page) || 1      
+  const limitNumber = parseInt(limit) || 10   
+  const skip = (pageNumber - 1) * limitNumber 
+
+  
   const serviceQuery = {}
 
-  // filter by category if provided
+  
   if(category){
     const categoryDoc = await Category.findOne({ 
       name: { $regex: category, $options: "i" },
@@ -24,29 +29,30 @@ export const searchServices = asyncHandler(async(req, res) => {
     serviceQuery.categoryId = categoryDoc._id
   }
 
-  // build provider match query
+  
   const providerMatch = {
-    status: "approved",    // only approved providers
-    isAvailable: true,     // only available providers
+    status: "approved",
+    isAvailable: true,
   }
 
-  // add city filter if provided
   if(city){
     providerMatch["provideraddress.city"] = { 
       $regex: city, 
-      $options: "i"  // case insensitive
+      $options: "i"
     }
   }
 
-  // add area filter if provided
   if(area){
     providerMatch["provideraddress.area"] = { 
       $regex: area, 
-      $options: "i"  // case insensitive
+      $options: "i"
     }
   }
 
-  // fetch services with filters
+  
+  const totalServices = await Service.countDocuments(serviceQuery)
+
+  
   const services = await Service.find(serviceQuery)
     .populate("categoryId", "name description image")
     .populate({
@@ -59,19 +65,32 @@ export const searchServices = asyncHandler(async(req, res) => {
       }
     })
     .sort({ createdAt: -1 })
+    .skip(skip)        
+    .limit(limitNumber) 
 
-  // filter out services where provider didnt match
+  
   const filteredServices = services.filter(s => s.providerId !== null)
 
-  // return empty array instead of error if no services
-  // so frontend can show "no services found" message
+  
+  const totalPages = Math.ceil(totalServices / limitNumber)
+  const hasNextPage = pageNumber < totalPages
+  const hasPrevPage = pageNumber > 1
+
   return res.status(200).json(
-    new ApiResponse(
-      200, 
-      filteredServices, 
-      filteredServices.length === 0 
-        ? "No services found" 
-        : "Services fetched successfully"
+    new ApiResponse(200, {
+      services: filteredServices,
+      pagination:{
+        totalServices,
+        totalPages,
+        currentPage: pageNumber,
+        limit: limitNumber,
+        hasNextPage,
+        hasPrevPage
+      }
+    },
+    filteredServices.length === 0
+      ? "No services found"
+      : "Services fetched successfully"
     )
   )
 })

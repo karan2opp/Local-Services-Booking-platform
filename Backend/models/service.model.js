@@ -36,6 +36,11 @@ const serviceSchema = new mongoose.Schema({
       validator: function(arr){ return arr.length >= 1 },
       message: "At least one image is required"
     }
-  }
+  },
+  beforeAfterImages:[{
+  before: { type: String },  
+  after: { type: String },   
+  caption: { type: String }  
+}]
 }, { timestamps: true })
 export const Service=mongoose.model("Service",serviceSchema)
