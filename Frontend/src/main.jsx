@@ -16,45 +16,34 @@ import UpdateProfile from './pages/ProviderPortfolio/UpdateProfile.jsx'
 import AdminDashboard from './adminDashboard/AdminDashboard.jsx'
 import axios from './utils/axiosConfig.js'
 
-
-function AuthProvider({ children }) {
+ function AuthProvider({ children }) {
   const { login, logout, setIsProvider } = useAuthStore()
 
   useEffect(() => {
-  console.log("calling /me...")
-  axios.get("/api/user/me")
-    .then(res => {
-      console.log("me response:", res.data)  // ✅ what does this show?
-      login(res.data.user)
-    })
-    .catch((err) => {
-      console.log("me error:", err.response?.status, err.message)  // ✅
-      logout()
-    })
-}, [])
-  useEffect(() => {
-    // ✅ no need for { withCredentials: true } — already in axiosConfig
-    axios.get("/api/user/me")
+    axios.get("/api/user/me", { withCredentials: true })
       .then(res => {
-        login(res.data.user)
+        login(res.data.user)  // ✅ set user
 
         if(res.data.user?.role !== "admin") {
-          axios.get("/api/serviceProvider/myStatus")
+          axios.get("/api/serviceProvider/myStatus", { withCredentials: true })
             .then(res => {
               setIsProvider(res.data.data.status === "approved")
             })
             .catch(() => {
+              // ✅ myStatus failed but user is still logged in — don't logout
               setIsProvider(false)
             })
         }
       })
       .catch(() => {
+        // ✅ only logout if /me fails (means not authenticated)
         logout()
       })
   }, [])
 
   return children
 }
+
 const router = createBrowserRouter([
   {
     path: "/",
