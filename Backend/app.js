@@ -9,12 +9,24 @@ import serviceRoute from "./routes/service.route.js"
 const app=express()
 app.set("trust proxy", 1)
 
-const corsOrigins = process.env.CORS_ORIGIN.split(",")
+const allowedOrigins = process.env.CORS_ORIGIN.split(",")
 
-app.use(cors({
-  origin: corsOrigins,
-  credentials: true
-}))
+app.use(
+  cors({
+    origin: function (origin, callback) {
+
+      // allow requests with no origin (mobile apps, Postman)
+      if (!origin) return callback(null, true)
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      }
+
+      return callback(new Error("CORS not allowed"))
+    },
+    credentials: true
+  })
+)
 app.use(express.json())
 
 app.use(urlencoded({extended:true,limit:"16kb"}))
