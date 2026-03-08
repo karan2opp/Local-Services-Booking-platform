@@ -1,5 +1,5 @@
 // customHooks/useAdmin.js
-import axios from "axios"
+import axios from "../utils/axiosConfig.js"
 import useAdminStore from "../store/useAdminStore"
 
 const useAdmin = () => {

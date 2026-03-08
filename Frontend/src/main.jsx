@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { useEffect } from 'react'
-import axios from 'axios'
+
 import useAuthStore from './store/useAuthStore'
 import Home from './pages/Home.jsx'
 import './index.css'
@@ -14,6 +14,7 @@ import ServiceFormPage from './pages/ProviderPortfolio/ServiceFormPage.jsx'
 import BookingRequestsPage from './pages/bookingRequestPage/BookingRequestsPage.jsx'
 import UpdateProfile from './pages/ProviderPortfolio/UpdateProfile.jsx'
 import AdminDashboard from './adminDashboard/AdminDashboard.jsx'
+import axios from './utils/axiosConfig.js'
 
 
 function AuthProvider({ children }) {

@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import axios from "axios"
+import axios from "../utils/axiosConfig.js"
 import useServiceStore from "../store/useServiceStore"
 
 const useGetServices = (filters = {}) => {

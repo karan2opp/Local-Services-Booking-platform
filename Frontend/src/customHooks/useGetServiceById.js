@@ -1,5 +1,5 @@
 // customHooks/useGetServiceById.js
-import axios from "axios"
+import axios from "../utils/axiosConfig.js"
 import useServiceDetailStore from "../store/useServiceDetailStore"
 
 const useGetServiceById = () => {

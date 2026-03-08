@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Menu, X, Briefcase, User } from "lucide-react"
 import AuthModal from "./AuthModal"
 import useAuthStore from "../store/useAuthStore"
-import axios from "axios"
+import axios from "../utils/axiosConfig";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)

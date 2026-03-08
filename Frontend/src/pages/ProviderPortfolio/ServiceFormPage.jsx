@@ -5,7 +5,7 @@ import PopUp from "../../components/PopUp"
 import Navbar from "../../components/Navbar"
 import { X, RefreshCw, Trash2 } from "lucide-react"
 import { compressImage } from "../../utils/compressImage"
-import axios from "axios"
+import axios from "../../utils/axiosConfig";
 import { useEffect } from "react"
 
 export default function ServiceFormPage() {

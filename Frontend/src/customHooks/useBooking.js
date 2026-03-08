@@ -1,5 +1,5 @@
 // customHooks/useBooking.js
-import axios from "axios"
+import axios from "../utils/axiosConfig.js"
 import useBookingStore from "../store/useBookingStore"
 
 const useBooking = () => {

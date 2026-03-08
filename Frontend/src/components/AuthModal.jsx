@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+import axios from "../utils/axiosConfig";
 import useAuthStore from "../store/useAuthStore";
 
 export default function AuthModal({ type, closeModal }) {
