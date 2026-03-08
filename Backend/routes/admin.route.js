@@ -2,7 +2,7 @@ import { approveServiceProvider, getApprovedProviders, getPendingProviders, getR
 import express from "express"
 import { isAdmin } from "../middlewares/isAdmin.middleware.js";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
-import { createCategory, deleteCategory, updateCategory } from "../controllers/category.controller.js";
+import { createCategory, deleteCategory, getCategories, updateCategory } from "../controllers/category.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 const router=express.Router()
 
@@ -11,6 +11,8 @@ router.route("/approvePendingProvider/:providerId").patch(verifyJwt,isAdmin, app
 router.route("/rejectPendingProvider/:providerId").patch(verifyJwt,isAdmin, rejectServiceProvider);
 router.route("/getAllApprovedProvider").get(verifyJwt,isAdmin, getApprovedProviders);
 router.route("/getAllrejectedProvider").get(verifyJwt,isAdmin, getRejectedProviders);
+
+router.route("/getCategories").get(getCategories) 
 
 
 router.route("/createCategory").post(verifyJwt, isAdmin, upload.single("image"), createCategory)
