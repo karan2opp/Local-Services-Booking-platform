@@ -13,6 +13,7 @@ import ProviderDashboard from './pages/ProviderPortfolio/ProviderDashboard.jsx'
 import ServiceFormPage from './pages/ProviderPortfolio/ServiceFormPage.jsx'
 import BookingRequestsPage from './pages/bookingRequestPage/BookingRequestsPage.jsx'
 import UpdateProfile from './pages/ProviderPortfolio/UpdateProfile.jsx'
+import AdminDashboard from './adminDashboard/AdminDashboard.jsx'
 
 
 // ✅ wrapper component to check auth
@@ -66,7 +67,8 @@ const router = createBrowserRouter([
   {
     path:"/PartnerBookings",element:<BookingRequestsPage />
   },
-  { path: "/UpdateProfile", element: <UpdateProfile /> }
+  { path: "/UpdateProfile", element: <UpdateProfile /> },
+  { path: "/admin", element: <AdminDashboard /> }
 ])
 
 createRoot(document.getElementById('root')).render(
