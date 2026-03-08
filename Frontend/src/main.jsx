@@ -21,23 +21,22 @@ function AuthProvider({ children }) {
   const { login, logout, setIsProvider } = useAuthStore()
 
   useEffect(() => {
-    axios.get("/api/user/me", { withCredentials: true })
+    // ✅ no need for { withCredentials: true } — already in axiosConfig
+    axios.get("/api/user/me")
       .then(res => {
-        login(res.data.user)  // ✅ set user
+        login(res.data.user)
 
         if(res.data.user?.role !== "admin") {
-          axios.get("/api/serviceProvider/myStatus", { withCredentials: true })
+          axios.get("/api/serviceProvider/myStatus")
             .then(res => {
               setIsProvider(res.data.data.status === "approved")
             })
             .catch(() => {
-              // ✅ myStatus failed but user is still logged in — don't logout
               setIsProvider(false)
             })
         }
       })
       .catch(() => {
-        // ✅ only logout if /me fails (means not authenticated)
         logout()
       })
   }, [])
