@@ -13,31 +13,29 @@ export default function AuthModal({ type, closeModal }) {
     formState: { errors },
   } = useForm();
 
-  const signup = async (data) => {
-    try {
-      const res = await axios.post("/api/user/register", data, {
-        withCredentials: true,
-      });
-      setUser(res.data.data) // save user to zustand
-      closeModal()
-    } catch (error) {
-      console.log(error.response?.data?.message || "Signup failed")
-    }
-  };
+const signup = async (data) => {
+  try {
+    const res = await axios.post("/api/user/register", data, { withCredentials: true })
+    setUser(res.data.data.user)  // ✅ was res.data.data
+      const loginRes = await axios.post("/api/user/login", {
+      email: data.email,
+      password: data.password
+    }, { withCredentials: true })
+    closeModal()
+  } catch (error) {
+    console.log(error.response?.data?.message || "Signup failed")
+  }
+}
 
-  const login = async (data) => {
-    
-    
-    try {
-      const res = await axios.post("/api/user/login", data, {
-        withCredentials: true,
-      });
-      setUser(res.data.data) // save user to zustand
-      closeModal()
-    } catch (error) {
-      console.log(error.response?.data?.message || "Login failed")
-    }
-  };
+const login = async (data) => {
+  try {
+    const res = await axios.post("/api/user/login", data, { withCredentials: true })
+    setUser(res.data.data.user)  // ✅ was res.data.data
+    closeModal()
+  } catch (error) {
+    console.log(error.response?.data?.message || "Login failed")
+  }
+}
 
   const onSubmit = (data) => {
     if (isSignup) {

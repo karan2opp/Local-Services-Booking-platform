@@ -14,20 +14,28 @@ export default function Navbar() {
   const [category, setCategory] = useState("")
   const [city, setCity] = useState("")
   const [area, setArea] = useState("")
+  const [categories, setCategories] = useState([])
 
   const dropdownRef = useRef(null)
   const navigate = useNavigate()
 
+const { user, isLoggedIn, logout, isProvider, isAdmin } = useAuthStore()
 
-  const { user, isLoggedIn, logout, isProvider } = useAuthStore()  // ✅
+  
+
+  useEffect(() => {
+    axios.get("/api/admin/getCategories")
+      .then(res => setCategories(res.data.data))
+      .catch(err => console.error("Failed to fetch categories", err))
+  }, [])
 
   const handleSearch = () => {
-    if(!search && !category && !city && !area) return
     const params = new URLSearchParams()
     if(search) params.set("q", search)
     if(category) params.set("category", category)
     if(city) params.set("city", city)
     if(area) params.set("area", area)
+    if(params.toString() === "") return
     navigate(`/search?${params.toString()}`)
     setMenuOpen(false)
   }
@@ -64,7 +72,7 @@ export default function Navbar() {
       scrolled ? "bg-white/80 backdrop-blur-md shadow-sm" : "bg-transparent"
     }`}>
 
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-14 gap-3">
 
           {/* Logo */}
@@ -75,60 +83,80 @@ export default function Navbar() {
             <span className="text-lg font-bold text-blue-600">LocalPro</span>
           </div>
 
-          {/* Desktop Search */}
-          <div className="hidden md:flex items-center gap-2">
-            <div className="flex items-center border border-gray-300 rounded-full px-3 py-1.5 gap-2 w-32 lg:w-40 xl:w-52 bg-white/90">
-              <svg className="text-gray-400 shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
+          {/* Desktop Search — hide for admin */}
+          
+            <div className="hidden md:flex items-center gap-2">
+
+              <div className="flex items-center border border-gray-300 rounded-full px-3 py-1.5 gap-2 w-36 lg:w-44 bg-white/90">
+                <svg className="text-gray-400 shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search services..."
+                  className="text-sm text-gray-600 placeholder-gray-400 outline-none w-full bg-transparent"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
+                />
+              </div>
+
+              <select
+                className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white"
+                value={category} onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="">Category</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat.name}>{cat.name}</option>
+                ))}
+              </select>
+
               <input
                 type="text"
-                placeholder="Search services..."
-                className="text-sm text-gray-600 placeholder-gray-400 outline-none w-full bg-transparent"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                placeholder="City"
+                className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white w-24"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
                 onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
               />
+
+              <input
+                type="text"
+                placeholder="Area"
+                className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white w-24"
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
+              />
+
+          
+
             </div>
-
-            <select className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white"
-              value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="">Category</option>
-              <option value="Saloon">Saloon</option>
-              <option value="Plumbing">Plumbing</option>
-              <option value="Cleaning">Cleaning</option>
-              <option value="AC-Service">AC Service</option>
-            </select>
-
-            <select className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white"
-              value={city} onChange={(e) => setCity(e.target.value)}>
-              <option value="">City</option>
-              <option value="Bangalore">Bangalore</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Delhi">Delhi</option>
-            </select>
-
-            <input
-              type="text"
-              placeholder="Area"
-              className="border border-gray-300 rounded-full px-2 py-1.5 text-sm text-gray-600 bg-white w-24"
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-              onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
-            />
-          </div>
+          
 
           {/* Right Section */}
           <div className="flex items-center gap-4 shrink-0">
 
-            {/* ✅ Become a Pro / Partner Dashboard */}
-            <button
-              onClick={() => navigate(isProvider ? "/PartnerDashboard" : "/Partner")}
-              className="hidden md:block text-sm text-gray-700 hover:text-blue-600 font-medium"
-            >
-              {isProvider ? "Partner Dashboard" : "Become a Pro"}
-            </button>
+            {/* ✅ Admin Dashboard button */}
+            {isAdmin && (
+              <button
+                onClick={() => navigate("/admin")}
+                className="hidden md:block text-sm text-gray-700 hover:text-blue-600 font-medium"
+              >
+                Admin Dashboard
+              </button>
+            )}
+
+            {/* ✅ Partner / Become a Pro button — hide for admin */}
+            {!isAdmin && (
+              <button
+                onClick={() => navigate(isProvider ? "/PartnerDashboard" : "/Partner")}
+                className="hidden md:block text-sm text-gray-700 hover:text-blue-600 font-medium"
+              >
+                {isProvider ? "Partner Dashboard" : "Become a Pro"}
+              </button>
+            )}
 
             {/* Profile Dropdown */}
             <div
@@ -143,19 +171,20 @@ export default function Navbar() {
 
               {profileOpen && (
                 <div className="absolute right-0 top-8 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
-
                   {isLoggedIn ? (
                     <>
                       <p className="px-4 py-2 text-sm text-black font-medium border-b border-gray-100">
                         👤 {user?.username}
                       </p>
 
-                      <button
-                        onClick={() => { navigate("/myBookings"); setProfileOpen(false) }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        My Bookings
-                      </button>
+                      {!isAdmin && (
+                        <button
+                          onClick={() => { navigate("/myBookings"); setProfileOpen(false) }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          My Bookings
+                        </button>
+                      )}
 
                       <button
                         onClick={handleLogout}
@@ -172,7 +201,6 @@ export default function Navbar() {
                       >
                         Login
                       </button>
-
                       <button
                         onClick={() => { setAuthType("signup"); setProfileOpen(false) }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -181,7 +209,6 @@ export default function Navbar() {
                       </button>
                     </>
                   )}
-
                 </div>
               )}
             </div>
@@ -192,7 +219,6 @@ export default function Navbar() {
             </button>
 
           </div>
-
         </div>
       </div>
 
@@ -200,63 +226,89 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white px-6 py-4 space-y-3">
 
-          <div className="flex items-center border border-gray-300 rounded-full px-3 py-2 gap-2">
-            <svg className="text-gray-400 shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search services..."
-              className="text-sm text-gray-600 outline-none w-full bg-transparent"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
-            />
-          </div>
+          {/* Search — hide for admin */}
+          
+            <>
+              <div className="flex items-center border border-gray-300 rounded-full px-3 py-2 gap-2">
+                <svg className="text-gray-400 shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search services..."
+                  className="text-sm text-gray-600 outline-none w-full bg-transparent"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
+                />
+              </div>
 
-          <select className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
-            value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">Category</option>
-            <option value="Saloon">Saloon</option>
-            <option value="Plumbing">Plumbing</option>
-            <option value="Cleaning">Cleaning</option>
-          </select>
+              <select
+                className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
+                value={category} onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="">Category</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat.name}>{cat.name}</option>
+                ))}
+              </select>
 
-          <select className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
-            value={city} onChange={(e) => setCity(e.target.value)}>
-            <option value="">City</option>
-            <option value="Bangalore">Bangalore</option>
-            <option value="Mumbai">Mumbai</option>
-            <option value="Delhi">Delhi</option>
-          </select>
+              <input
+                type="text"
+                placeholder="City"
+                className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
+              />
 
-          <input type="text" placeholder="Area"
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
-            value={area} onChange={(e) => setArea(e.target.value)}
-            onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }} />
+              <input
+                type="text"
+                placeholder="Area"
+                className="border border-gray-300 rounded-lg px-3 py-2 w-full text-sm text-gray-600"
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                onKeyDown={(e) => { if(e.key === "Enter") handleSearch() }}
+              />
 
-          <button onClick={handleSearch}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm">
-            Search
-          </button>
+              <button onClick={handleSearch}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700">
+                Search
+              </button>
 
-          <hr />
+              <hr />
+            </>
+          
 
-          {/* ✅ Become a Pro / Partner Dashboard mobile */}
-          <button
-            onClick={() => { navigate(isProvider ? "/PartnerDashboard" : "/Partner"); setMenuOpen(false) }}
-            className="block w-full text-left text-sm py-1 text-gray-700"
-          >
-            {isProvider ? "Partner Dashboard" : "Become a Pro"}
-          </button>
+          {/* ✅ Admin Dashboard mobile */}
+          {isAdmin && (
+            <button
+              onClick={() => { navigate("/admin"); setMenuOpen(false) }}
+              className="block w-full text-left text-sm py-1 text-gray-700"
+            >
+              Admin Dashboard
+            </button>
+          )}
+
+          {/* ✅ Partner/Become a Pro mobile — hide for admin */}
+          {!isAdmin && (
+            <button
+              onClick={() => { navigate(isProvider ? "/PartnerDashboard" : "/Partner"); setMenuOpen(false) }}
+              className="block w-full text-left text-sm py-1 text-gray-700"
+            >
+              {isProvider ? "Partner Dashboard" : "Become a Pro"}
+            </button>
+          )}
 
           {isLoggedIn ? (
             <>
-              <button onClick={() => { navigate("/myBookings"); setMenuOpen(false) }}
-                className="block w-full text-left text-sm py-1 text-gray-700">
-                My Bookings
-              </button>
+              {!isAdmin && (
+                <button onClick={() => { navigate("/myBookings"); setMenuOpen(false) }}
+                  className="block w-full text-left text-sm py-1 text-gray-700">
+                  My Bookings
+                </button>
+              )}
               <button onClick={handleLogout}
                 className="block w-full text-left text-sm py-1 text-red-500">
                 Logout

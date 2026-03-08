@@ -5,6 +5,8 @@ import PopUp from "../../components/PopUp"
 import Navbar from "../../components/Navbar"
 import { X, RefreshCw, Trash2 } from "lucide-react"
 import { compressImage } from "../../utils/compressImage"
+import axios from "axios"
+import { useEffect } from "react"
 
 export default function ServiceFormPage() {
 
@@ -16,6 +18,13 @@ export default function ServiceFormPage() {
   const { createService, updateService, updatePortfolio, isLoading } = useProviderService()
   const [popup, setPopup] = useState(null)
   const [image, setImage] = useState(null)
+  const [categories, setCategories] = useState([])
+
+useEffect(() => {
+  axios.get("/api/admin/getCategories")
+    .then(res => setCategories(res.data.data))
+    .catch(err => console.error(err))
+}, [])
   const [preview, setPreview] = useState(
     Array.isArray(service?.image) ? service?.image[0] : service?.image || null
   )
@@ -291,15 +300,22 @@ export default function ServiceFormPage() {
           </div>
 
           {/* Category — only on create */}
-          {!isEditing && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Category ID *</label>
-              <input type="text" name="categoryId"
-                className="border rounded-lg p-2 w-full mt-1 text-sm"
-                placeholder="Enter category ID"
-                value={formData.categoryId} onChange={handleChange} />
-            </div>
-          )}
+         {!isEditing && (
+  <div>
+    <label className="text-sm font-medium text-gray-700">Category *</label>
+    <select
+      name="categoryId"
+      className="border rounded-lg p-2 w-full mt-1 text-sm"
+      value={formData.categoryId}
+      onChange={handleChange}
+    >
+      <option value="">Select a category</option>
+      {categories.map((cat) => (
+        <option key={cat._id} value={cat._id}>{cat.name}</option>
+      ))}
+    </select>
+  </div>
+)}
 
           {/* ✅ Before/After Section */}
           <div className="space-y-3">

@@ -16,22 +16,27 @@ import UpdateProfile from './pages/ProviderPortfolio/UpdateProfile.jsx'
 import AdminDashboard from './adminDashboard/AdminDashboard.jsx'
 
 
-// ✅ wrapper component to check auth
 function AuthProvider({ children }) {
   const { login, logout, setIsProvider } = useAuthStore()
 
   useEffect(() => {
-    // check auth
     axios.get("/api/user/me", { withCredentials: true })
       .then(res => {
-        login(res.data.data)
-        // ✅ also check provider status
-        return axios.get("/api/serviceProvider/myStatus", { withCredentials: true })
-      })
-      .then(res => {
-        setIsProvider(res.data.data.status === "approved")
+        login(res.data.user)  // ✅ set user
+
+        if(res.data.user?.role !== "admin") {
+          axios.get("/api/serviceProvider/myStatus", { withCredentials: true })
+            .then(res => {
+              setIsProvider(res.data.data.status === "approved")
+            })
+            .catch(() => {
+              // ✅ myStatus failed but user is still logged in — don't logout
+              setIsProvider(false)
+            })
+        }
       })
       .catch(() => {
+        // ✅ only logout if /me fails (means not authenticated)
         logout()
       })
   }, [])
