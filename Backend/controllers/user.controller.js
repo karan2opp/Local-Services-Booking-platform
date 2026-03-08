@@ -78,24 +78,26 @@ console.log(req.body);
 
   const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
-  
+const options = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+}
 
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", 
-  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-  }
- 
-     
-  return res.status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(
-      new ApiResponse(200, {
+return res
+  .status(200)
+  .cookie("accessToken", accessToken, options)
+  .cookie("refreshToken", refreshToken, options)
+  .json(
+    new ApiResponse(
+      200,
+      {
         user: loggedInUser,
-        accessToken:accessToken,
-      }, "User logged in successfully") // ✅ message inside constructor
+        accessToken: accessToken,
+      },
+      "User logged in successfully"
     )
+  )
 })
 
 const logoutUser=asyncHandler(async(req,res)=>{

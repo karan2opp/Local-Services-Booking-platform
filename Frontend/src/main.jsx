@@ -21,6 +21,18 @@ function AuthProvider({ children }) {
   const { login, logout, setIsProvider } = useAuthStore()
 
   useEffect(() => {
+  console.log("calling /me...")
+  axios.get("/api/user/me")
+    .then(res => {
+      console.log("me response:", res.data)  // ✅ what does this show?
+      login(res.data.user)
+    })
+    .catch((err) => {
+      console.log("me error:", err.response?.status, err.message)  // ✅
+      logout()
+    })
+}, [])
+  useEffect(() => {
     // ✅ no need for { withCredentials: true } — already in axiosConfig
     axios.get("/api/user/me")
       .then(res => {
