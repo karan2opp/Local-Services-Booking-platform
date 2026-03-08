@@ -6,22 +6,22 @@ import serviceProviderRoute from "../Backend/routes/serviceProvider.route.js"
 import adminRoute from "../Backend/routes/admin.route.js"
 import bookingRoute from "../Backend/routes/booking.route.js"
 import serviceRoute from "./routes/service.route.js"
-const app=express()
+const app = express()
 app.set("trust proxy", 1)
+const allowedOrigins = process.env.CORS_ORIGIN.split(",").map(o => o.trim())  // ✅ trim spaces
 
-const allowedOrigins = process.env.CORS_ORIGIN.split(",")
+console.log("Allowed origins:", allowedOrigins)  // ✅ check in Render logs
 
 app.use(
   cors({
     origin: function (origin, callback) {
-
-      // allow requests with no origin (mobile apps, Postman)
       if (!origin) return callback(null, true)
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true)
       }
 
+      console.log("CORS blocked:", origin)  // ✅ see what's being blocked
       return callback(new Error("CORS not allowed"))
     },
     credentials: true
