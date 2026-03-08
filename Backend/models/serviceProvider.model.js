@@ -11,6 +11,7 @@ const serviceProviderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Service"
   }],
+
   provideraddress:{
     street: String,
     city: String,
@@ -38,16 +39,13 @@ const serviceProviderSchema = new mongoose.Schema({
   },
   status: {
   type: String,
-  enum: ["pending", "approved", "rejected"],
-  default: "pending"
+  enum: ["notApplied","pending", "approved", "rejected"],
+  default: "notApplied"
 },
   isAvailable:{
     type: Boolean,
     default: true
   },
-  coverImage:{
-    type: String,
 
-  }
 },{ timestamps: true }) 
 export const serviceProvider=mongoose.model("serviceProvider",serviceProviderSchema)

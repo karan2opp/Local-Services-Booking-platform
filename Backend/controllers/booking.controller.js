@@ -225,31 +225,24 @@ if(booking.serviceProviderId.toString() !== req.provider._id.toString()){
 export const getMyBookings = asyncHandler(async(req, res) => {
 
   const customerId = req.user._id
+  const { status } = req.query
 
-  const { status } = req.query  // optional filter by status
-
-  // build query
   const query = { customerId }
-  if(status){
-    query.status = status
-  }
+  if(status) query.status = status
 
   const bookings = await Booking.find(query)
-    .populate("serviceId", "serviceName price serviceType")
-    .populate("serviceProviderId", "userId businessPhone provideraddress")
+    .populate("serviceId", "serviceName price serviceType image")  // ✅ add image
     .populate({
       path: "serviceProviderId",
+      select: "userId businessPhone provideraddress",
       populate:{
         path: "userId",
         select: "username email phone"
       }
     })
-    .sort({ createdAt: -1 })  // latest first
+    .sort({ createdAt: -1 })
 
-  if(bookings.length === 0){
-    throw new ApiError(404, "No bookings found")
-  }
-
+  // ✅ return empty array instead of throwing error
   return res.status(200).json(
     new ApiResponse(200, bookings, "Bookings fetched successfully")
   )
@@ -258,29 +251,22 @@ export const getMyBookings = asyncHandler(async(req, res) => {
 // GET BOOKINGS TO SERVE (provider)
 export const getProviderBookings = asyncHandler(async(req, res) => {
 
-  const { status } = req.query  // optional filter by status
+  const { status } = req.query
 
-  // get provider profile first
   const provider = await serviceProvider.findOne({ userId: req.user._id })
   if(!provider){
     throw new ApiError(404, "Provider profile not found")
   }
 
-  // build query
   const query = { serviceProviderId: provider._id }
-  if(status){
-    query.status = status
-  }
+  if(status) query.status = status
 
   const bookings = await Booking.find(query)
-    .populate("serviceId", "serviceName price serviceType")
-    .populate("customerId", "username email phone addresses")
-    .sort({ createdAt: -1 })  // latest first
+    .populate("serviceId", "serviceName price serviceType image")  // ✅ add image
+    .populate("customerId", "username email phone")                // ✅ removed addresses (not needed here)
+    .sort({ createdAt: -1 })
 
-  if(bookings.length === 0){
-    throw new ApiError(404, "No bookings found")
-  }
-
+  // ✅ just return empty array, no error
   return res.status(200).json(
     new ApiResponse(200, bookings, "Bookings fetched successfully")
   )
