@@ -30,7 +30,7 @@ function AuthProvider({ children }) {
         console.log(res.data.user);
         
       } catch (err) {
-        console.log("User not logged in");
+        console.log("User not logged in",err);
         logout();
       }
     };
