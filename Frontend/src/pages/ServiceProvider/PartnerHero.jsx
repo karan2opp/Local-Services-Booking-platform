@@ -1,6 +1,6 @@
 import PartnerForm from "./PartnerForm"
 import TrustBadges from "./TrustBadges"
-
+import localPro from "../../assets/localPro.png"
 export default function PartnerHero({ initialStatus }) {  // ✅ receive prop
   return (
     <div className="grid md:grid-cols-2 gap-10 items-start">
@@ -21,7 +21,7 @@ export default function PartnerHero({ initialStatus }) {  // ✅ receive prop
         <TrustBadges />
 
         <img
-          src="https://images.unsplash.com/photo-1600880292089-90e028c64a9b"
+          src={localPro}
           className="rounded-xl mt-6 shadow-md"
         />
       </div>
