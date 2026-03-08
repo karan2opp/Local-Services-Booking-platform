@@ -27,6 +27,8 @@ function AuthProvider({ children }) {
         const res = await axios.get("/api/user/me");
         
         login(res.data.user);
+        console.log(res.data.user);
+        
       } catch (err) {
         console.log("User not logged in");
         logout();
