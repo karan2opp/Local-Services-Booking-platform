@@ -80,7 +80,8 @@ console.log(req.body);
 
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production" // ✅ only secure in production
+    secure: process.env.NODE_ENV === "production", 
+    sameSite: "None", 
   }
  
      
