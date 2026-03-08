@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { serviceProvider } from "../models/serviceProvider.model.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
 import { Service } from "../models/service.model.js"
 import { Category } from "../models/category.model.js"
 import { Booking } from "../models/booking.model.js"

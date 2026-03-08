@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { Service } from "../models/service.model.js"
 import { Category } from "../models/category.model.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
 
 export const searchServices = asyncHandler(async(req, res) => {
 

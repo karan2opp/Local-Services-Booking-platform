@@ -3,7 +3,7 @@ import { Booking } from "../models/booking.model.js"
 import { Service } from "../models/service.model.js"
 import { serviceProvider } from "../models/serviceProvider.model.js"
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
 
 export const createBooking = asyncHandler(async(req, res) => {
 
