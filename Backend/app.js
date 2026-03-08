@@ -7,9 +7,12 @@ import adminRoute from "../Backend/routes/admin.route.js"
 import bookingRoute from "../Backend/routes/booking.route.js"
 import serviceRoute from "./routes/service.route.js"
 const app=express()
+app.set("trust proxy", 1)
+
+const corsOrigins = process.env.CORS_ORIGIN.split(",")
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN,  
+  origin: corsOrigins,
   credentials: true
 }))
 app.use(express.json())
