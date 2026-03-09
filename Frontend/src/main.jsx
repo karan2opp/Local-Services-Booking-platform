@@ -24,8 +24,9 @@ function AuthProvider({ children }) {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get("/api/user/me");
-        
+        const res =  await axios.get("/api/user/me", {
+          withCredentials: true,
+        });
         login(res.data.user);
         console.log(res.data.user);
         
