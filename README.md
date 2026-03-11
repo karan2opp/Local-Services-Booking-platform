@@ -120,7 +120,7 @@ Frontend runs at `http://localhost:5173`
 
 Dummy admin credentials:
 
-email: admin@gmail.com
+email: admin@gmail.com <br>
 password: admin123 
 
 ---
