@@ -118,11 +118,10 @@ Frontend runs at `http://localhost:5173`
 
 ### 4. Create Admin Account
 
-Register a normal user, then update the role directly in MongoDB Atlas:
+Dummy admin credentials:
 
-```
-users collection → find your user → set role: "admin"
-```
+email: admin@gmail.com
+password: admin123 
 
 ---
 
